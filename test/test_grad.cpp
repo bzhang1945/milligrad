@@ -1,5 +1,6 @@
 /*
- *
+ * test_grad.cpp - Test suite for Milligrad
+ * Benson Zhang
  */
 #include <memory>
 #include <cmath>
