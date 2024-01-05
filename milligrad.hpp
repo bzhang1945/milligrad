@@ -1,6 +1,8 @@
 /*
- * milligrad.hpp
- * 
+ * milligrad.hpp - Milligrad Automatic Differentiation Engine
+ * Implementation of a basic scalar-valued autograd (automatic differentiation) engine.
+ * Supports all basic elementary functions, including arithmetic operators, exponentiation, logarithms, and trigonometric functions.
+ * Additionally supports relu and tanh functions for convenience.
  * Benson Zhang
  */
 

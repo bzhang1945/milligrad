@@ -1,8 +1,7 @@
 /*
  * milligrad.cpp - Milligrad
- * Implementation of a basic scalar-valued autograd (automatic differentiation) engine.
- * Supports all basic elementary functions, including arithmetic operators, exponentiation, logarithms, and trigonometric functions.
- * Additionally supports relu and tanh functions for convenience.
+ * Builds a computational DAG optimised by only storing other Vars, and performs backprop through
+ * recursive topological sort. Implements all basic elementary functions.
  * Benson Zhang
  */
 
@@ -16,7 +15,6 @@ using VarPtr = std::shared_ptr<Var>;
 
 void Var::backward() {
     std::vector<VarPtr> topo;
-    // std::unordered_set<VarPtr> visited;
     std::function<void(VarPtr)> tsort = [&](VarPtr v) {
         if (!v->visited) {
             v->visited = true;
