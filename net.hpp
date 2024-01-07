@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <memory>
+#include <random>
 #include "milligrad.hpp"
 
 using VarPtr = std::shared_ptr<Var>;
@@ -51,10 +52,11 @@ class Net: public Module {
         std::vector<Layer> layers;
 };
 
-// Mean-Squared Loss: L = (Y - \bar{Y})^2
-VarPtr mse_loss(const std::vector<VarPtr>& ytrue, const std::vector<VarPtr>& ypred);
+// Calculates and returns mean-squared loss (L = (Y - \bar{Y})^2 / |Y|) with mini-batch estimate.
+VarPtr mse_loss(const std::vector<VarPtr>& ytrue, const std::vector<VarPtr>& ypred, int batch_size, std::mt19937& rng);
 
-// Conduct forward and backward (propagation and gradient descent) passes of a set of data for a number of epochs.
-void train(Net& model, const std::vector<std::vector<VarPtr>>& x, const std::vector<VarPtr>& y, int epochs, double lr);
+// Conducts forward and backward (propagation and gradient descent) passes of a set of data for a number of epochs.
+// Performs gradient descent by default; specifying batch size (1 <= batch_size <= |Y|) performs mini-batch SGD.
+void train(Net& model, const std::vector<std::vector<VarPtr>>& x, const std::vector<VarPtr>& y, int epochs, double lr, int batch_size = 0);
 
 #endif // NET_HPP

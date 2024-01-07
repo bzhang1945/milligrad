@@ -56,8 +56,8 @@ int main() {
     std::vector<int> layer_sizes = {4, 4, 1};
     Net model = Net(X[0].size(), layer_sizes);
 
-    // train the network for 100 epochs at a learning rate at 0.05.
-    train(model, X, Y, 50, 0.05);
+    // train the network for 50 epochs at a learning rate at 0.1, without SGD.
+    train(model, X, Y, 50, 0.1);
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;

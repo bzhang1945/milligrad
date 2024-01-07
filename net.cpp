@@ -7,8 +7,8 @@
  */
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <random>
-#include <cassert>
 #include <iostream>
 #include "milligrad.hpp"
 #include "net.hpp"
@@ -28,7 +28,6 @@ Net::Node::Node(int inputs) {
 
 VarPtr Net::Node::operator()(const std::vector<VarPtr>& x, bool activation) {
     // R(w^T x + b)
-    assert(("Dimension mismatch", x.size() == w.size()));
     VarPtr dp = std::make_shared<Var>(0.0);
     for (int i = 0; i < w.size(); i++) {
         dp = dp + w[i] * x[i];
@@ -98,18 +97,24 @@ std::vector<VarPtr> Net::params() {
     return p;
 }
 
-VarPtr mse_loss(const std::vector<VarPtr>& ytrue, const std::vector<VarPtr>& ypred) { // , int batch_size
-    assert(ytrue.size() == ypred.size());
-    //if (batch_size = -1) {
-    //}
+VarPtr mse_loss(const std::vector<VarPtr>& ytrue, const std::vector<VarPtr>& ypred, int batch_size, std::mt19937& rng) {
+    // Create a random permutation of the size of y to simulate drawing batches
+    std::vector<int> perm(ytrue.size());
+    for (int i = 0; i < ytrue.size(); ++i) perm[i] = i;
+    std::shuffle(std::begin(perm), std::end(perm), rng);
+
     auto loss = std::make_shared<Var>(0.0);
-    for (int i = 0; i < ytrue.size(); ++i) {
-        loss = loss + pow(ytrue[i] - ypred[i], 2);
+    for (int i = 0; i < batch_size; ++i) {
+        int idx = perm[i];
+        loss = loss + pow(ytrue[idx] - ypred[idx], 2);
     }
-    return loss;
+    return loss / batch_size;
 }
 
-void train(Net& model, const std::vector<std::vector<VarPtr>>& x, const std::vector<VarPtr>& y, int epochs, double lr) {
+void train(Net& model, const std::vector<std::vector<VarPtr>>& x, const std::vector<VarPtr>& y, int epochs, double lr, int batch_size) {
+    std::mt19937 rng{std::random_device{}()};
+    int bs = (batch_size == 0) ? y.size() : bs;
+    
     for (int e = 1; e <= epochs; ++e) {
         // forward pass model
         std::vector<VarPtr> y_pred;
@@ -117,13 +122,12 @@ void train(Net& model, const std::vector<std::vector<VarPtr>>& x, const std::vec
             // currently assumes the case with 1 output node per input
             y_pred.emplace_back(model(x[i])[0]);
         }
-
-        // get loss, flush, backprop
-        auto loss = mse_loss(y, y_pred);
+        // calculate loss (stochastic), flush, backprop
+        auto loss = mse_loss(y, y_pred, bs, rng);
         model.zero_grad();
         loss->backward();
         
-        // gradient descent
+        // gradient descent updates
         std::vector<VarPtr> parameters = model.params();
         for (auto& p : parameters) {
             p->val = p->val - lr * p->grad;

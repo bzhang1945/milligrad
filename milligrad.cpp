@@ -9,6 +9,7 @@
 #include <memory>
 #include <functional>
 #include <cmath>
+#include <stack>
 #include "milligrad.hpp"
 
 using VarPtr = std::shared_ptr<Var>;
@@ -16,11 +17,19 @@ using VarPtr = std::shared_ptr<Var>;
 void Var::backward() {
     std::vector<VarPtr> topo;
     std::function<void(VarPtr)> tsort = [&](VarPtr v) {
-        if (!v->visited) {
-            v->visited = true;
-            if (v->prev1 != nullptr) tsort(v->prev1);
-            if (v->prev2 != nullptr) tsort(v->prev2);
-            topo.push_back(v);
+        std::stack<VarPtr> stack;
+        stack.push(v);
+        while (!stack.empty()) {
+            VarPtr curr = stack.top();
+            stack.pop();
+            curr->visited = true;
+            topo.push_back(curr);
+            if (curr->prev1 != nullptr && !curr->prev1->visited) {
+                stack.push(curr->prev1);
+            }
+            if (curr->prev2 != nullptr && !curr->prev2->visited) {
+                stack.push(curr->prev2);
+            }
         }
     };
     
@@ -28,7 +37,7 @@ void Var::backward() {
 
     // backpropagation from topo sort and reset visited
     this->grad = 1.0;
-    for (auto it = topo.rbegin(); it != topo.rend(); it++) {
+    for (auto it = topo.begin(); it != topo.end(); ++it) {
         auto& v = *it;
         v->back();
         v->visited = false;
