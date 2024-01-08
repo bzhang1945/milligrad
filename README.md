@@ -7,7 +7,7 @@ Inspired by Andrej Karpathy's [micrograd](https://github.com/karpathy/micrograd)
 
 Milligrad builds a computational DAG that enables efficient backpropagation through topological sort. The system supports all basic elementary functions, including arithmetic operators, exponentiation, logarithms, and trig functions. The engine additionally implements the ReLU and tanh functions for deep learning convenience.
 
-A simple Neural Network framework `net` is also implemented that runs on Milligrad to efficiently perform backpropagation and mini-batch SGD. `net` is structured similar to PyTorch's API to enable network and training parameter customisation. By default, `net` utilises the [He Initialisation](https://paperswithcode.com/method/he-initialization) and tanh activation due to its performance on small scale regression tasks, the target for networks on scalar engines.
+A simple Neural Network framework `net` is also implemented that runs on Milligrad to efficiently perform backpropagation and mini-batch SGD. `net` is structured similar to PyTorch's API to enable network and training parameter customisation. By default, `net` utilises the [Xavier Initialisation](https://paperswithcode.com/method/xavier-initialization) and tanh activation due to its performance on small scale regression tasks, the target for networks on scalar engines.
 
 ### Demo
 Consider a very simple $\mathbb{R}^3 \rightarrow \mathbb{R}$ neural network regression task, with the following data: 
