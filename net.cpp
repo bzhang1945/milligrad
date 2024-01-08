@@ -2,7 +2,7 @@
  * net.cpp - Vanilla Neural Network
  * Implements a basic multilayered perceptron with backpropagation powered by Milligrad.
  * Nodes utilise the He Initialisation on weights and the tanh activation function on non-output layers.
- * Training performs vanilla GD based on the mean squared loss function.
+ * Training performs mini-batch SGD based on the mean squared loss function.
  * Benson Zhang
  */
 #include <vector>
@@ -15,9 +15,8 @@
 
 using VarPtr = std::shared_ptr<Var>;
 
-Net::Node::Node(int inputs) {
-    std::mt19937 rng{std::random_device{}()};
-    // He Initialisation
+Net::Node::Node(int inputs, std::mt19937& rng) {
+    // Xavier Initialisation
     std::normal_distribution<double> dist(0.0, std::sqrt(2.0 / inputs));
     for (int i = 0; i < inputs; ++i) {
         w.emplace_back(std::make_shared<Var>(dist(rng)));
@@ -45,9 +44,9 @@ std::vector<VarPtr> Net::Node::params() {
 }
 
  
-Net::Layer::Layer(int inputs, int outputs) {
+Net::Layer::Layer(int inputs, int outputs, std::mt19937& rng) {
     for (int i = 0; i < outputs; ++i) {
-        nodes.emplace_back(Node(inputs));
+        nodes.emplace_back(Node(inputs, rng));
     }
 }
 
@@ -71,10 +70,12 @@ std::vector<VarPtr> Net::Layer::params() {
 
 
 Net::Net(int inputs, std::vector<int> outputs) {
+    std::random_device rd;
+    rng.seed(rd());
     // outputs: vector[layer1 size, layer2 size, ..., ], outputs size must >= 1
-    layers.emplace_back(Layer(inputs, outputs[0]));
+    layers.emplace_back(Layer(inputs, outputs[0], rng));
     for (int i = 0; i < outputs.size() - 1; i++) {
-        layers.emplace_back(Layer(outputs[i], outputs[i+1]));
+        layers.emplace_back(Layer(outputs[i], outputs[i+1], rng));
     }
 }
 

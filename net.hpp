@@ -31,7 +31,7 @@ class Net: public Module {
                 VarPtr b;
 
             public:
-                Node(int inputs);
+                Node(int inputs, std::mt19937& rng);
                 VarPtr operator()(const std::vector<VarPtr>& x, bool activation);
                 std::vector<VarPtr> params();
         };
@@ -40,7 +40,7 @@ class Net: public Module {
             private:
                 std::vector<Node> nodes;
             public:
-                Layer(int inputs, int outputs);
+                Layer(int inputs, int outputs, std::mt19937& rng);
                 std::vector<VarPtr> operator()(const std::vector<VarPtr>& x, bool activation);
                 std::vector<VarPtr> params();
         };
@@ -50,6 +50,7 @@ class Net: public Module {
 
     private:
         std::vector<Layer> layers;
+        std::mt19937 rng;
 };
 
 // Calculates and returns mean-squared loss (L = (Y - \bar{Y})^2 / |Y|) with mini-batch estimate.
